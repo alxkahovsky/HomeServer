@@ -3,6 +3,10 @@ from e3372h import Client
 from fastapi import BackgroundTasks, FastAPI
 from fastapi_utils.tasks import repeat_every
 import random
+import asyncio
+from pywizlight import wizlight, PilotBuilder, discovery
+import itertools
+
 
 application = FastAPI()
 
@@ -51,3 +55,12 @@ def get_modem_status():
 # async def test_bgtask(background_tasks: BackgroundTasks):
 #     background_tasks.add_task(background_task)
 #     return {"message": "Email Log Entry Created by Background Task"}
+
+@application.get('/bulbs')
+async def get_bulbs() -> dict:
+    """ возвращает сериализированные данные по лампам в сети"""
+    bulbs = await discovery.discover_lights(broadcast_space="192.168.1.255")
+    result = {i+1: dict(itertools.islice(bulbs[i].__dict__.items(), 4)) for i in range(0, len(bulbs))}
+    return result
+
+
