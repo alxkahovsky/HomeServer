@@ -1,5 +1,4 @@
-import copy
-
+from copy import copy
 import requests
 from e3372h import Client
 from fastapi import BackgroundTasks, FastAPI, Body
@@ -10,11 +9,10 @@ from pywizlight import wizlight, PilotBuilder, discovery
 import itertools
 from db_manager import get_database
 import json
+from models import Room
 
 
 application = FastAPI()
-dbname = get_database()
-collection = dbname["ROOMS"]
 
 
 @application.get('/modem_status')
@@ -70,19 +68,25 @@ async def get_bulbs() -> dict:
     return result
 
 
-@application.get('/test_db/{query_string}')
-async def test_bd(query_string) -> json:
-    print(query_string)
-    splitted_query = query_string.split(':')
-    if len(splitted_query) != 2:
-        return {'error': 'Incorrect query'}
-    query = {splitted_query[0]: splitted_query[1]}
-    result = collection.find_one(query)
-    return result
-
-
 @application.post('/create_room')
-def create_person(data=Body()):
-    result = copy.copy(data)
-    collection.insert_one(data)
-    return result
+def create_room(data: dict = Body()):
+    """
+    Создание объекта комнаты.
+    Пример данных ввода: {"id":"Название", "devices":dict}, параметр "devices" - необязательный.
+    Для создания пустой комнаты не указывайте его.
+    Пример данных вывода: {"id":"Название", "devices":dict}.
+    """
+    room = Room(data)
+    return room.create()
+
+
+@application.get('/room/{room_id}')
+def get_room(room_id: str):
+    room = Room({'id': room_id})
+    return room.read()
+
+
+@application.patch('/add_room_device')
+def bind_device(data: dict = Body()):
+    room = Room(data)
+    return room.update()
