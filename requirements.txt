@@ -24,3 +24,4 @@ websockets==10.4
 xmltodict==0.13.0
 
 pywizlight~=0.5.14
+pymongo~=4.3.2
