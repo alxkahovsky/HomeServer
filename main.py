@@ -7,9 +7,10 @@ import random
 import asyncio
 from pywizlight import wizlight, PilotBuilder, discovery
 import itertools
-from db_manager import get_database
 import json
 from models import Room
+from typing import Dict
+from pydantic import BaseModel
 
 
 application = FastAPI()
@@ -60,6 +61,7 @@ def get_modem_status():
 #     background_tasks.add_task(background_task)
 #     return {"message": "Email Log Entry Created by Background Task"}
 
+
 @application.get('/bulbs')
 async def get_bulbs() -> dict:
     """ возвращает сериализированные данные по лампам в сети"""
@@ -69,20 +71,14 @@ async def get_bulbs() -> dict:
 
 
 @application.post('/create_room')
-def create_room(data: dict = Body()):
-    """
-    Создание объекта комнаты.
-    Пример данных ввода: {"id":"Название", "devices":dict}, параметр "devices" - необязательный.
-    Для создания пустой комнаты не указывайте его.
-    Пример данных вывода: {"id":"Название", "devices":dict}.
-    """
+def create_room(data: Dict = Body()):
     room = Room(data)
     return room.create()
 
 
-@application.get('/room/{room_id}')
-def get_room(room_id: str):
-    room = Room({'id': room_id})
+@application.get('/room/{room}')
+def get_room(room: str):
+    room = Room({'room': room})
     return room.read()
 
 
